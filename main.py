@@ -155,7 +155,7 @@ def process_image(image_path, output_dir):
             "text_color": "black",
         },
         {
-            "text": "指定的位置地点",  # 修改地理位置文字为所需的内容
+            "text": "待修改文字",  # 修改地理位置文字为所需的内容
             "left": int(image_width / 40),
             "text_size": int(extra_height / 8),  # 增加字体大小
             "top": int(image_length + (extra_height / 4) + int((extra_height / 4) * 1.5)),
@@ -236,9 +236,9 @@ def process_image(image_path, output_dir):
     # 构造输出路径
     output_path = os.path.join(output_dir, os.path.basename(image_path))
 
-    # 保存修改后的图片并保留EXIF信息
+    # 保存修改后的图片并保留EXIF信息,设定图像质量，默认为90，Dpi为300，可设置为100原质量
     exif_bytes = piexif.dump(exif_dict)
-    background_image.save(output_path, "jpeg", exif=exif_bytes, dpi=(300.0, 300.0), quality=100)
+    background_image.save(output_path, "jpeg", exif=exif_bytes, dpi=(300.0, 300.0), quality=90)
 
 
 if __name__ == "__main__":
