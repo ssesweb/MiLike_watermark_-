@@ -1,5 +1,7 @@
-# BY Quiet Phoenix Change，现在可以修改地理位置和保留原有exif信息，同时添加了边框，双击main.py以启动，下图为示例图像
-![太原工业学院0219](https://github.com/ssesweb/MiLike_watermark_-/assets/51811437/dd81f3e1-0995-46ab-ac23-c283998bbf52)
+# BY Quiet Phoenix Change
+现在可以修改地理位置和保留原有exif信息，同时添加了边框，双击main.py以启动，下图为示例图像，原质量约7Mb，压缩为2Mb
+![太原工业学院0219](https://github.com/ssesweb/MiLike_watermark_-/assets/51811437/c1d7a1be-7f88-44ca-859f-7aa137018f84)
+
 
 # MiLike_watermark
 
