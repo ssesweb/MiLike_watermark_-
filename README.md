@@ -1,3 +1,6 @@
+# BY Quiet Phoenix Change，现在可以修改地理位置和保留原有exif信息，同时添加了边框，双击main.py以启动，下图为示例图像
+![太原工业学院0219](https://github.com/ssesweb/MiLike_watermark_-/assets/51811437/dd81f3e1-0995-46ab-ac23-c283998bbf52)
+
 # MiLike_watermark
 
 这个 Python 程序用于给图片添加类似小米徕卡风格的水印并保存到指定的输出目录。
