@@ -1,8 +1,9 @@
 from PIL import Image, ImageDraw, ImageFont
 import exifread
 import os
+import piexif
 
-#为模仿风格，使用了小米字体
+# 为模仿风格，使用了小米字体
 FONT = "./font/MiSans-Normal.ttf"
 INPUT_DIR = "./input/"
 OUTPUT_DIR = "./output/"
@@ -103,7 +104,6 @@ def process_image(image_path, output_dir):
 
     返回：
     保存增加水印后的照片到指定的输出目录
-
     """
     print("正在处理：" + os.path.basename(image_path))
 
@@ -112,6 +112,7 @@ def process_image(image_path, output_dir):
 
     # 载入图片
     image = Image.open(image_path)
+    exif_dict = piexif.load(image.info["exif"])  # 加载EXIF信息
 
     # 读取照片长宽
     image_length = exif_info["ImageLength"]
@@ -126,6 +127,12 @@ def process_image(image_path, output_dir):
     background_height = extra_height + image_length
     background_color = "white"
     background_image = Image.new("RGB", (image_width, background_height), background_color)
+
+    # 缩小原图
+    shrink_factor = 0.95
+    new_image_width = int(image_width * shrink_factor)
+    new_image_length = int(image_length * shrink_factor)
+    image = image.resize((new_image_width, new_image_length))
 
     # 设定水印信息
     lens_info_text = str(
@@ -143,15 +150,15 @@ def process_image(image_path, output_dir):
         {
             "text": exif_info["Camera"],
             "left": int(image_width / 40),
-            "text_size": int(extra_height / 5),
+            "text_size": int(extra_height / 4),  # 增加字体大小
             "top": int(image_length + (extra_height / 4)),
             "text_color": "black",
         },
         {
-            "text": exif_info["DateTime"],
+            "text": "指定的位置地点",  # 修改地理位置文字为所需的内容
             "left": int(image_width / 40),
-            "text_size": int(extra_height / 10),
-            "top": int(image_length + (extra_height / 4) + int((extra_height / 5) * 1.5)),
+            "text_size": int(extra_height / 8),  # 增加字体大小
+            "top": int(image_length + (extra_height / 4) + int((extra_height / 4) * 1.5)),
             "text_color": "gray",
         },
         {
@@ -160,10 +167,10 @@ def process_image(image_path, output_dir):
                 image_width
                 - (
                     int(image_width / 40) * 2
-                    + int(len(lens_info_text) * int(extra_height / 5) / 2)
+                    + int(len(lens_info_text) * int(extra_height / 4) / 2)
                 )
             ),
-            "text_size": int(extra_height / 5),
+            "text_size": int(extra_height / 4),  # 增加字体大小
             "top": int(image_length + (extra_height / 4)),
             "text_color": "black",
         },
@@ -173,25 +180,25 @@ def process_image(image_path, output_dir):
                 image_width
                 - (
                     int(image_width / 40) * 2
-                    + int(len(lens_info_text) * int(extra_height / 5) / 2)
+                    + int(len(lens_info_text) * int(extra_height / 4) / 2)
                 )
             ),
-            "text_size": int(extra_height / 10),
-            "top": int(image_length + (extra_height / 4) + int(extra_height / 5) * 1.5),
+            "text_size": int(extra_height / 8),  # 增加字体大小
+            "top": int(image_length + (extra_height / 4) + int(extra_height / 4) * 1.5),
             "text_color": "gray",
         },
     ]
 
     # 创建分割线
     guideline_length = (
-        int((extra_height / 5) * 1.5) + int(extra_height / 10) + int(extra_height / 5)
+        int((extra_height / 4) * 1.5) + int(extra_height / 8) + int(extra_height / 4)
     )
     guideline = Image.new("RGB", (5, guideline_length), "gray")
-    guideline_top = int(image_length + (extra_height / 4) - int(extra_height / 5 / 2))
+    guideline_top = int(image_length + (extra_height / 4) - int(extra_height / 4 / 2))
     guideline_left = int(
         image_width
-        - (int(image_width / 40) * 2 + int(len(lens_info_text) * int(extra_height / 5) / 2))
-        - int(extra_height / 5 / 2)
+        - (int(image_width / 40) * 2 + int(len(lens_info_text) * int(extra_height / 4) / 2))
+        - int(extra_height / 4 / 2)
     )
 
     # 确认LOGO
@@ -204,10 +211,12 @@ def process_image(image_path, output_dir):
 
     logo = logo.resize((guideline_length, guideline_length), 1)
     logo_top = guideline_top
-    logo_left = guideline_left - int(extra_height / 5 / 2) - guideline_length
+    logo_left = guideline_left - int(extra_height / 4 / 2) - guideline_length
 
     # 合并底图
-    background_image.paste(image, (0, 0))
+    paste_x = (image_width - new_image_width) // 2
+    paste_y = (image_length - new_image_length) // 2
+    background_image.paste(image, (paste_x, paste_y))
     background_image.paste(guideline, (guideline_left, guideline_top))
     background_image.paste(logo, (logo_left, logo_top))
 
@@ -220,13 +229,16 @@ def process_image(image_path, output_dir):
             watermark_list[i]["text"],
             watermark_list[i]["text_color"],
             font=ImageFont.truetype(FONT, watermark_list[i]["text_size"], encoding="utf-8"),
+            stroke_width=1,  # 加粗
+            stroke_fill="black",  # 轮廓颜色
         )
 
     # 构造输出路径
     output_path = os.path.join(output_dir, os.path.basename(image_path))
 
-    # 保存修改后的图片
-    background_image.save(output_path, dpi=(300.0, 300.0), quality=100)
+    # 保存修改后的图片并保留EXIF信息
+    exif_bytes = piexif.dump(exif_dict)
+    background_image.save(output_path, "jpeg", exif=exif_bytes, dpi=(300.0, 300.0), quality=100)
 
 
 if __name__ == "__main__":
